@@ -58,4 +58,29 @@ mod tests {
         assert!(joint_dynamics[0] == dynamics1.unwrap());
         assert!(joint_dynamics[1] == dynamics2.unwrap());
     }
+
+    #[test]
+    fn test_joint_tf_matrices() {
+        // construct a robot
+        let mut robot = Robot::new("ur5e");
+        let dh1 = DHParameter::new(0.1625, 1.5707964268, 0.0, 0.0);
+        let joint1 = Joint::new("joint1", dh1.clone(), None);
+        robot.add_joint(joint1);
+
+        // test the joint tf matrices
+        let joint_tf_matrices = robot.get_tf_matrices();
+        let tf1 = joint_tf_matrices[0];
+
+
+        let mut tf1_expected = nalgebra::Matrix4::new(
+            1.0, 0.0, 0.0, 0.0,
+            0.0, 0.0, -1.0, 0.0,
+            0.0, 1.0, 0.0, 0.1625,
+            0.0, 0.0, 0.0, 1.0
+        );
+
+        round_matrix4x4(&mut tf1_expected, 5);
+
+        assert!(tf1 == tf1_expected);
+    }
 }

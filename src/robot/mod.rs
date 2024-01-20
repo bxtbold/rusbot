@@ -1,6 +1,6 @@
 mod joint;
 
-pub use joint::{Joint, DHParameter, Dynamics};
+pub use joint::{Joint, DHParameter, Dynamics, round_matrix4x4};
 
 
 #[derive(Debug)]
@@ -44,5 +44,13 @@ impl Robot {
             joint_names.push(joint.name.clone());
         }
         joint_names
+    }
+
+    pub fn get_tf_matrices(&self) -> Vec<nalgebra::Matrix4::<f64>> {
+        let mut tfs: Vec<nalgebra::Matrix4::<f64>> = Vec::new();
+        for joint in &self.joints {
+            tfs.push(joint.get_tf_matrix());
+        }
+        tfs
     }
 }
