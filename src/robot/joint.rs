@@ -12,20 +12,26 @@ pub struct Joint {
     pub name: String,
     pub dh: DHParameter,
     pub dynamics: Dynamics,
+    pub tf_matrix: nalgebra::Matrix4<f64>,
 }
 
 impl Joint {
     pub fn new(name: &str, dh: Option<DHParameter>, dynamics: Option<Dynamics>) -> Joint {
+        let dh = dh.unwrap_or(
+            DHParameter::new(0.0, 0.0, 0.0, 0.0)
+            .expect("DHParameters are not valid!")
+        );
+        let dynamics = dynamics.unwrap_or(
+            Dynamics::new(0.0, 0.0, 0.0, 0.0)
+            .expect("Dynamics are not valid!")
+        );
+        let tf_matrix = Joint::load_tf_matrix(dh.clone());
+
         Joint {
             name: name.to_string(),
-            dh: dh.unwrap_or(
-                DHParameter::new(0.0, 0.0, 0.0, 0.0)
-                .expect("DHParameters are not valid!")
-            ),
-            dynamics: dynamics.unwrap_or(
-                Dynamics::new(0.0, 0.0, 0.0, 0.0)
-                .expect("Dynamics are not valid!")
-            ),
+            dh,
+            dynamics,
+            tf_matrix,
         }
     }
 
@@ -45,20 +51,24 @@ impl Joint {
         &self.dynamics
     }
 
-    pub fn get_tf_matrix(&self) -> nalgebra::Matrix4<f64> {
+    pub fn get_tf_matrix(&self) -> &nalgebra::Matrix4<f64> {
+        &self.tf_matrix
+    }
 
-        let m11 = self.dh.theta.cos();
-        let m12 = -self.dh.theta.sin() * self.dh.alpha.cos();
-        let m13 = self.dh.theta.sin() * self.dh.alpha.sin();
-        let m14 = self.dh.r * self.dh.theta.cos();
-        let m21 = self.dh.theta.sin();
-        let m22 = self.dh.theta.cos() * self.dh.alpha.cos();
-        let m23 = -self.dh.theta.cos() * self.dh.alpha.sin();
-        let m24 = self.dh.r * self.dh.theta.sin();
+    fn load_tf_matrix(dh: DHParameter) -> nalgebra::Matrix4<f64> {
+
+        let m11 = dh.theta.cos();
+        let m12 = -dh.theta.sin() * dh.alpha.cos();
+        let m13 = dh.theta.sin() * dh.alpha.sin();
+        let m14 = dh.r * dh.theta.cos();
+        let m21 = dh.theta.sin();
+        let m22 = dh.theta.cos() * dh.alpha.cos();
+        let m23 = -dh.theta.cos() * dh.alpha.sin();
+        let m24 = dh.r * dh.theta.sin();
         let m31 = 0.0;
-        let m32 = self.dh.alpha.sin();
-        let m33 = self.dh.alpha.cos();
-        let m34 = self.dh.d;
+        let m32 = dh.alpha.sin();
+        let m33 = dh.alpha.cos();
+        let m34 = dh.d;
         let m41 = 0.0;
         let m42 = 0.0;
         let m43 = 0.0;

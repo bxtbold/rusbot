@@ -49,7 +49,7 @@ impl Robot {
     pub fn get_tf_matrices(&self) -> Vec<nalgebra::Matrix4::<f64>> {
         let mut tfs: Vec<nalgebra::Matrix4::<f64>> = Vec::new();
         for joint in &self.joints {
-            tfs.push(joint.get_tf_matrix());
+            tfs.push(*joint.get_tf_matrix());
         }
         tfs
     }
